@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🏥 SafeDrip ICU Dashboard</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0b1220;
+      color: white;
+      text-align: center;
+    }
+
+    .card {
+      background: #111a2e;
+      padding: 15px;
+      margin: 10px;
+      border-radius: 10px;
+      display: inline-block;
+      width: 250px;
+    }
+
+    .critical {
+      background: red;
+      animation: blink 1s infinite;
+    }
+
+    .warning {
+      background: orange;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0.3; }
+    }
+
+    .bar {
+      width: 300px;
+      height: 20px;
+      background: #333;
+      margin: auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 50%;
+      background: lime;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🏥 SafeDrip ICU Dashboard</h1>
+
+<div class="card">
+  🛏️ Bed: <span id="bed">--</span>
+</div>
+
+<div class="card">
+  🧪 Weight: <span id="weight">0</span> g
+</div>
+
+<div class="card">
+  📡 Status: <span id="status">WAITING</span>
+</div>
+
+<div id="alert" class="card">
+  NORMAL
+</div>
+
+<br><br>
+
+<h3>📊 Saline Level</h3>
+<div class="bar">
+  <div id="fill" class="fill"></div>
+</div>
+
+<script>
+const socket = io("https://safedrip-service-1.onrender.com");
+
+socket.on("update", (data) => {
+
+  document.getElementById("bed").innerText = data.bed;
+  document.getElementById("weight").innerText = data.weight;
+  document.getElementById("status").innerText = "ONLINE";
+
+  let w = data.weight;
+
+  // update bar
+  let fill = document.getElementById("fill");
+  fill.style.width = Math.min(100, (w / 25) * 100) + "%";
+
+  let alertBox = document.getElementById("alert");
+
+  // ALERT SYSTEM
+  if (w < 5) {
+    alertBox.innerText = "🚨 CRITICAL ALERT";
+    alertBox.className = "card critical";
+  }
+  else if (w < 10) {
+    alertBox.innerText = "⚠️ WARNING";
+    alertBox.className = "card warning";
+  }
+  else {
+    alertBox.innerText = "NORMAL";
+    alertBox.className = "card";
+  }
+});
+</script>
+
+</body>
+</html>
